@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>创新 | 快车道🚉 各语系贴文参考</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Axios + Dayjs -->
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+
+<style>
+/* ===== 主题变量 ===== */
+:root{
+  --sidebar-bg:#f0f4f9; --sidebar-tx:#000; --sidebar-hi:#1d4ed8;
+  --bar-bg:#e8f0fe; --bar-tx:#000;
+  --gallery-bg:#fafafa;
+}
+body.dark{
+  --sidebar-bg:#1f2937; --sidebar-tx:#fff; --sidebar-hi:#60a5fa;
+  --bar-bg:#374151; --bar-tx:#fff;
+  --gallery-bg:#111827;
+}
+/* ===== 通用 ===== */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
+.snippet{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+body{background:var(--gallery-bg);}
+
+/* 侧边栏 */
+#sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--sidebar-bg);color:var(--sidebar-tx);}
+#sidebar .sidebar-active{font-weight:700;color:var(--sidebar-hi);}
+
+/* 顶部筛选栏固定 */
+#controls{
+  position:sticky;top:0;z-index:50;
+  background:var(--bar-bg);color:var(--bar-tx);
+}
+#controls select,#controls input{
+  background:inherit;color:inherit;border:1px solid #cbd5e1;
+}
+</style>
+</head>
+<body class="min-h-screen flex">
+
+<!-- 侧边栏 -->
+<aside id="sidebar" class="w-64 shrink-0 shadow-lg">
+  <h2 class="text-lg font-semibold p-4 border-b">创新 | 快车道🚉 各语系贴文参考</h2>
+  <ul class="px-4 space-y-2 text-sm select-none">
+    <li><details open><summary data-l1="自家" class="cursor-pointer py-1 font-medium">自家</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
+    <li><details><summary data-l1="宗派" class="cursor-pointer py-1 font-medium">宗派</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
+    <li><details><summary data-l1="外邦" class="cursor-pointer py-1 font-medium">外邦</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
+
+    <button id="toggleTheme" class="mt-6 w-full text-xs rounded border px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-600">
+      🌞/🌙 切换主题
+    </button>
+    <button id="resetCat" class="mt-3 text-xs text-gray-500 hover:text-blue-600">清空选项</button>
+  </ul>
+</aside>
+
+<!-- 主区域 -->
+<main class="flex-1 flex flex-col">
+  <!-- 顶栏 -->
+  <section id="controls" class="p-4 border-b flex flex-wrap gap-4 items-center text-sm">
+    <div class="flex items-center gap-2">
+      <label>日期范围</label>
+      <input id="dateFrom" type="date" class="border rounded px-1 py-0.5">
+      <span>至</span>
+      <input id="dateTo" type="date" class="border rounded px-1 py-0.5">
+    </div>
+    <select id="selLang" class="border rounded px-2 py-1"><option value="ALL">显示全部语系</option></select>
+    <select id="selSort" class="border rounded px-2 py-1">
+      <option value="likes">按点赞排序</option>
+      <option value="comments">按留言排序</option>
+      <option value="shares">按分享排序</option>
+      <option value="random">随机排序</option>
+    </select>
+    <button id="btnShuffle" class="ml-auto text-xs bg-blue-600 text-white px-3 py-1 rounded hidden">随机刷新</button>
+  </section>
+
+  <section id="gallery" class="flex-1 overflow-y-auto p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></section>
+</main>
+
+<!-- 卡片模板 -->
+<template id="cardTpl">
+  <article class="card bg-white dark:bg-gray-800 rounded shadow hover:shadow-lg transition flex flex-col">
+    <img class="w-full h-48 object-cover">
+    <a class="plink text-blue-600 underline text-xs px-3 pt-2" target="_blank">打开链接 ↗</a>
+    <p class="snippet px-3 text-sm py-1"></p>
+    <div class="meta mt-auto px-3 py-2 text-xs flex justify-between items-center border-t">
+      <span class="stats"></span><span class="lang"></span>
+    </div>
+  </article>
+</template>
+
+<script>
+/* CONFIG */
+const SHEET_ID='1aBLL5Yig_F3Ev1DWBmoduY_d614nAEHbjk8Ngteots8';
+const API_KEY ='AIzaSyCO0edSQXijL9Jw0GIdxJu9FB2CGW8TSSk';
+const RANGE   ='Website!A:K';
+
+let raw=[],catFilter={l1:null,l2:null};
+const $=s=>document.querySelector(s);
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+
+function toDirectLink(url){
+  if(!url.includes('drive.google.com')) return url;
+  try{
+    const u=new URL(url);
+    let id=u.searchParams.get('id')||'';
+    if(!id){
+      const parts=u.pathname.split('/');
+      const idx=parts.indexOf('d');
+      if(idx>-1&&parts[idx+1]) id=parts[idx+1];
+    }
+    return id?`https://lh3.googleusercontent.com/d/${id}=w1200`:url;
+  }catch{ return url;}
+}
+
+/* fetch */
+async function fetchSheet(){
+  const res=await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}&majorDimension=ROWS`);
+  const [h,...rows]=res.data.values;
+  return rows.map(r=>{
+    const obj=Object.fromEntries(h.map((k,i)=>[k,r[i]||'']));
+    const v=(obj.catL2||'').trim();
+    obj.catL2=v==='视频'?'视频':v==='纯文字贴'?'纯文字':(v?'图文':'');
+    return obj;
+  });
+}
+
+/* sidebar */
+function buildSidebar(items){
+  const map={};
+  items.forEach(i=>{(map[i.catL1]=map[i.catL1]||new Set()).add(i.catL2);});
+  document.querySelectorAll('#sidebar details').forEach(d=>{
+    const l1=d.querySelector('summary').dataset.l1;
+    const ul=d.querySelector('ul'); ul.innerHTML='';
+    (map[l1]||[]).forEach(l2=>{
+      const li=document.createElement('li');
+      li.textContent=l2; li.dataset.l1=l1; li.dataset.l2=l2;
+      li.className='cursor-pointer hover:text-blue-600';
+      ul.appendChild(li);
+    });
+  });
+}
+
+/* langs */
+function buildLangOptions(items){
+  [...new Set(items.map(i=>i.lang).filter(Boolean))].forEach(l=>{
+    const o=document.createElement('option');o.value=l;o.textContent=l;$('#selLang').appendChild(o);
+  });
+}
+
+/* render */
+function render(list){
+  const gal=$('#gallery'); gal.innerHTML='';
+  const tpl=$('#cardTpl');
+  list.forEach(it=>{
+    const n=tpl.content.cloneNode(true);
+    const img=n.querySelector('img');
+    const src=it.imageUrl?toDirectLink(it.imageUrl):null;
+    if(!src) return;
+    img.dataset.src=src; img.loading='lazy';
+    n.querySelector('.plink').href=it.postLink;
+    const full=(it.content||'').toString();
+    const sn=n.querySelector('.snippet');sn.textContent=full.length>100?full.slice(0,100)+'…':full;sn.title=full;
+    n.querySelector('.stats').textContent=`👍${it.likes||0} 💬${it.comments||0} ↪️${it.shares||0}`;
+    n.querySelector('.lang').textContent=it.lang;
+    gal.appendChild(n);
+  });
+  lazyLoadImages();
+}
+
+function lazyLoadImages(){
+  const imgs=[...$('#gallery').querySelectorAll('img[data-src]')];
+  const io=new IntersectionObserver((es,o)=>es.forEach(en=>{
+    if(en.isIntersecting){en.target.src=en.target.dataset.src;en.target.removeAttribute('data-src');o.unobserve(en.target);}
+  }),{rootMargin:'200px'});
+  imgs.forEach(i=>io.observe(i));
+}
+
+/* filter */
+function applyFilters(){
+  let v=[...raw];
+  if(catFilter.l1){v=v.filter(i=>i.catL1===catFilter.l1);if(catFilter.l2)v=v.filter(i=>i.catL2===catFilter.l2);}
+  const f=$('#dateFrom').value,t=$('#dateTo').value;
+  if(f) v=v.filter(i=>dayjs(i.date).isAfter(dayjs(f).subtract(1,'day')));
+  if(t) v=v.filter(i=>dayjs(i.date).isBefore(dayjs(t).add(1,'day')));
+  if($('#selLang').value!=='ALL') v=v.filter(i=>i.lang===$('#selLang').value);
+  const k=$('#selSort').value; v=k==='random'?shuffle(v):v.sort((a,b)=>(+b[k]||0)-(+a[k]||0));
+  $('#btnShuffle').classList.toggle('hidden',k!=='random');
+  render(v);
+}
+
+/* events */
+$('#sidebar').addEventListener('click',e=>{
+  const li=e.target.closest('[data-l1]'); if(!li) return;
+  $('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));
+  li.classList.add('sidebar-active'); if(li.dataset.l2) li.closest('details').querySelector('summary').classList.add('sidebar-active');
+  catFilter={l1:li.dataset.l1,l2:li.dataset.l2||null}; applyFilters();
+});
+$('#resetCat').onclick=()=>{catFilter={l1:null,l2:null};$('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));applyFilters();};
+['#dateFrom','#dateTo'].forEach(id=>$(id).onchange=applyFilters);
+$('#selLang').onchange=$('#selSort').onchange=applyFilters; $('#btnShuffle').onclick=applyFilters;
+
+/* theme */
+function setTheme(m){document.body.classList.toggle('dark',m==='dark');localStorage.setItem('theme',m);}
+$('#toggleTheme').onclick=()=>setTheme(document.body.classList.contains('dark')?'light':'dark');
+setTheme(localStorage.getItem('theme')==='dark'?'dark':'light');
+
+/* init */
+(async()=>{raw=await fetchSheet();buildSidebar(raw);buildLangOptions(raw);applyFilters();})();
+</script>
+</body>
+</html>
