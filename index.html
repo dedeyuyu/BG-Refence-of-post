@@ -50,7 +50,12 @@
       </select>
       <button id="btnLatest"   class="border rounded px-2 py-1">最新优先</button>
       <button id="btnExport"   class="border rounded px-2 py-1">📤 导出</button><!-- ➊-3 新增导出按钮 -->
-      <button id="btnAddPage"  class="border rounded px-2 py-1">➕ 新增专页</button>
+      <!-- 把原来的 id="btnAddPage" 按钮替换为链接 -->
+       <a id="btnAddPage"
+           href="https://docs.google.com/spreadsheets/d/1aPloiod1bn1qyy-0j1Vly5dEStmiFHdrqA4-QGjxaCA9/edit?gid=0"
+        target="_blank"
+      class="border rounded px-2 py-1">➕ 新增专页</a>
+
       <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7FEPha3xCawC7hjOH7TwKUzpn1YLVX63eeMYSbzSTzbYShw/viewform?usp=header"
          target="_blank" class="border rounded px-2 py-1">问题 & 修改建议</a>
       <button id="btnShuffle" class="ml-auto text-xs bg-blue-600 text-white px-3 py-1 rounded hidden">随机刷新</button>
@@ -83,7 +88,12 @@
       <ul id="exportList" class="space-y-2 text-sm select-none cursor-grab"></ul>
       <div class="mt-4 flex justify-end gap-2">
         <button id="cancelExport" class="px-3 py-1 border rounded text-xs">取消</button>
-        <button id="confirmExport" class="px-3 py-1 bg-blue-600 text-white rounded text-xs">导出 CSV</button>
+        <!-- ③ 导出弹窗底部按钮文字 -->
+      <button id="confirmExport"
+            class="px-3 py-1 bg-blue-600 text-white rounded text-xs">
+            复制到剪贴板
+      </button>
+
       </div>
     </div>
   </div>
@@ -106,8 +116,18 @@
     </div>
   </div>
   
+
+  
   <script>
   /* CONFIG ------------------------------------------------------------------*/
+  function toast(msg){
+  const t=document.createElement('div');
+  t.textContent=msg;
+  t.className='fixed top-2 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-1 rounded shadow text-sm z-[9999]';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),5000);
+  }
+  
   const SHEET_ID='1aBLL5Yig_F3Ev1DWBmoduY_d614nAEHbjk8Ngteots8';
   const API_KEY ='AIzaSyCO0edSQXijL9Jw0GIdxJu9FB2CGW8TSSk';
   const RANGE   ='Website!A:K';
@@ -158,7 +178,10 @@
       const full=(it.content||'').toString();
       n.querySelector('.snippet').textContent=full.length>100?full.slice(0,100)+'…':full;
       n.querySelector('.snippet').title=full;
-      n.querySelector('.copyBtn').onclick=()=>navigator.clipboard.writeText(full);
+      n.querySelector('.copyBtn').onclick=()=>{
+  navigator.clipboard.writeText(full).then(()=>toast('复制文案成功'));
+};
+
       n.querySelector('.stats').textContent=`👍${it.likes||0} 💬${it.comments||0} ↪️${it.shares||0}`;
       n.querySelector('.lang').textContent=it.lang;
       n.querySelector('.date').textContent=dayjs(it.date).format('YYYY-MM-DD');
@@ -168,6 +191,11 @@
       cb.onchange=e=>{
         cb.checked?selectedSet.add(it.id):selectedSet.delete(it.id);
       };
+      img.onclick=()=>{
+        cb.checked=!cb.checked;
+      cb.dispatchEvent(new Event('change'));
+      };
+
       gal.appendChild(n);
     });
     lazyLoadImages();
@@ -199,7 +227,15 @@
     li.classList.add('sidebar-active'); if(li.dataset.l2) li.closest('details').querySelector('summary').classList.add('sidebar-active');
     catFilter={l1:li.dataset.l1,l2:li.dataset.l2||null}; applyFilters();
   });
-  $('#resetCat').onclick=()=>{catFilter={l1:null,l2:null};$('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));applyFilters();};
+  /* ② resetCat —— 把 toast 移进去 */
+  $('#resetCat').onclick = () => {
+    catFilter = {l1:null,l2:null};
+    $('#sidebar').querySelectorAll('.sidebar-active')
+               .forEach(el=>el.classList.remove('sidebar-active'));
+    applyFilters();
+    toast('清空选项成功');          // ← 现在在函数内部
+  };
+
   ['#dateFrom','#dateTo'].forEach(id=>$(id).onchange=applyFilters);
   $('#selLang').onchange=$('#selSort').onchange=applyFilters; $('#btnShuffle').onclick=applyFilters;
   $('#btnLatest').onclick=()=>{$('#selSort').value='date';applyFilters();};
@@ -228,20 +264,23 @@
   }
   $('#btnExport').onclick=()=>{buildExportList();$('#exportModal').classList.remove('hidden');};
   $('#cancelExport').onclick=()=>$('#exportModal').classList.add('hidden');
-  $('#confirmExport').onclick=()=>{
-    const order=[...exportList.children].map(li=>({key:li.dataset.key,checked:li.querySelector('input').checked}));
-    localStorage.setItem('exportCfg',JSON.stringify(order)); // 存配置
-    const headers=order.filter(o=>o.checked).map(o=>fields.find(f=>f.key===o.key).txt);
-    const rows=[...selectedSet].map(id=>{
-      const item=raw.find(i=>i.id===id);
-      return order.filter(o=>o.checked).map(o=>item[o.key]||'');
-    });
-    if(!rows.length){alert('请先选中卡片');return;}
-    const csv=[headers,...rows].map(r=>r.map(s=>`"${String(s).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='export.csv';a.click();URL.revokeObjectURL(url);
-    $('#exportModal').classList.add('hidden');
-  };
+  $('#confirmExport').onclick=async()=>{
+  const order=[...exportList.children]
+        .map(li=>({key:li.dataset.key,checked:li.querySelector('input').checked}));
+  localStorage.setItem('exportCfg',JSON.stringify(order));
+  const headers=order.filter(o=>o.checked).map(o=>fields.find(f=>f.key===o.key).txt);
+  const rows=[...selectedSet].map(id=>{
+    const item=raw.find(i=>i.id===id);
+    return order.filter(o=>o.checked).map(o=>item[o.key]||'');
+  });
+  if(!rows.length){alert('请先选中卡片');return;}
+  /* —— 使用 \t 生成可直接粘到表格的软件 —— */
+  const tsv=[headers,...rows].map(r=>r.join('\t')).join('\n');
+  await navigator.clipboard.writeText(tsv);   // 复制
+  toast('导出帖文成功');                      // 绿色提示
+  $('#exportModal').classList.add('hidden');
+};
+
   
   /* ------- 8 新增专页弹窗改动（自动加行 & 关闭）--------------------------*/
   function addRow(){const tr=document.createElement('tr');tr.innerHTML=
