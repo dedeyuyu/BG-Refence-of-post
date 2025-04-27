@@ -1,218 +1,299 @@
-<!DOCTYPE html>
-<html lang="zh" class="scroll-smooth">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>创新 | 快车道🚉 各语系贴文参考</title>
-
-<!-- Tailwind -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Axios + Dayjs -->
-<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
-
-<style>
-/* ===== 主题变量 ===== */
-:root{
-  --sidebar-bg:#f0f4f9; --sidebar-tx:#000; --sidebar-hi:#1d4ed8;
-  --bar-bg:#e8f0fe; --bar-tx:#000;
-  --gallery-bg:#fafafa;
-}
-body.dark{
-  --sidebar-bg:#1f2937; --sidebar-tx:#fff; --sidebar-hi:#60a5fa;
-  --bar-bg:#374151; --bar-tx:#fff;
-  --gallery-bg:#111827;
-}
-/* ===== 通用 ===== */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.snippet{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
-body{background:var(--gallery-bg);}
-
-/* 侧边栏 */
-#sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--sidebar-bg);color:var(--sidebar-tx);}
-#sidebar .sidebar-active{font-weight:700;color:var(--sidebar-hi);}
-
-/* 顶部筛选栏固定 */
-#controls{
-  position:sticky;top:0;z-index:50;
-  background:var(--bar-bg);color:var(--bar-tx);
-}
-#controls select,#controls input{
-  background:inherit;color:inherit;border:1px solid #cbd5e1;
-}
-</style>
-</head>
-<body class="min-h-screen flex">
-
-<!-- 侧边栏 -->
-<aside id="sidebar" class="w-64 shrink-0 shadow-lg">
-  <h2 class="text-lg font-semibold p-4 border-b">创新 | 快车道🚉 各语系贴文参考</h2>
-  <ul class="px-4 space-y-2 text-sm select-none">
-    <li><details open><summary data-l1="自家" class="cursor-pointer py-1 font-medium">自家</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
-    <li><details><summary data-l1="宗派" class="cursor-pointer py-1 font-medium">宗派</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
-    <li><details><summary data-l1="外邦" class="cursor-pointer py-1 font-medium">外邦</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
-
-    <button id="toggleTheme" class="mt-6 w-full text-xs rounded border px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-600">
-      🌞/🌙 切换主题
-    </button>
-    <button id="resetCat" class="mt-3 text-xs text-gray-500 hover:text-blue-600">清空选项</button>
-  </ul>
-</aside>
-
-<!-- 主区域 -->
-<main class="flex-1 flex flex-col">
-  <!-- 顶栏 -->
-  <section id="controls" class="p-4 border-b flex flex-wrap gap-4 items-center text-sm">
-    <div class="flex items-center gap-2">
-      <label>日期范围</label>
-      <input id="dateFrom" type="date" class="border rounded px-1 py-0.5">
-      <span>至</span>
-      <input id="dateTo" type="date" class="border rounded px-1 py-0.5">
+<!DOCTYPE html><html lang="zh" class="scroll-smooth"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>创新 | 快车道🚉 各语系贴文参考</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  
+  <style>
+  :root{--sidebar-bg:#f0f4f9;--sidebar-tx:#000;--sidebar-hi:#1d4ed8;--bar-bg:#e8f0fe;--bar-tx:#000;--gallery-bg:#fafafa}
+  body.dark{--sidebar-bg:#1f2937;--sidebar-tx:#fff;--sidebar-hi:#60a5fa;--bar-bg:#374151;--bar-tx:#fff;--gallery-bg:#111827}
+  ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
+  body{background:var(--gallery-bg)} .snippet{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+  #sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--sidebar-bg);color:var(--sidebar-tx)}
+  #sidebar .sidebar-active{font-weight:700;color:var(--sidebar-hi)}
+  #controls{position:sticky;top:0;z-index:50;background:var(--bar-bg);color:var(--bar-tx)}
+  #controls select,#controls input{background:inherit;color:inherit;border:1px solid #cbd5e1}
+  .card img{aspect-ratio:3/5;object-fit:cover}
+  .card .date{font-size:.9rem;font-weight:500}
+  /* 多选勾选框显眼一点 */
+  .card input[type=checkbox]{accent-color:#1d4ed8}
+  </style>
+  </head><body class="min-h-screen flex">
+  
+  <!-- 侧边栏 -->
+  <aside id="sidebar" class="w-64 shrink-0 shadow-lg">
+    <h2 class="text-lg font-semibold p-4 border-b">创新 | 快车道🚉 各语系贴文参考</h2>
+    <ul class="px-4 space-y-2 text-sm select-none">
+      <li><details open><summary data-l1="自家" class="cursor-pointer py-1 font-medium">自家</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
+      <li><details><summary data-l1="宗派" class="cursor-pointer py-1 font-medium">宗派</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
+      <li><details><summary data-l1="外邦" class="cursor-pointer py-1 font-medium">外邦</summary><ul class="pl-4 space-y-1 mt-1"></ul></details></li>
+      <button id="toggleTheme" class="mt-6 w-full text-xs rounded border px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-600">🌞/🌙 切换主题</button>
+      <button id="resetCat"  class="mt-3 text-xs text-gray-500 hover:text-blue-600">清空选项</button>
+    </ul>
+  </aside>
+  
+  <main class="flex-1 flex flex-col">
+    <!-- 顶栏 -->
+    <section id="controls" class="p-4 border-b flex flex-wrap gap-4 items-center text-sm">
+      <div class="flex items-center gap-2">
+        <label>日期范围</label><input id="dateFrom" type="date" class="border rounded px-1 py-0.5"><span>至</span>
+        <input id="dateTo" type="date" class="border rounded px-1 py-0.5">
+      </div>
+      <select id="selLang" class="border rounded px-2 py-1"><option value="ALL">显示全部语系</option></select>
+      <select id="selSort" class="border rounded px-2 py-1">
+        <option value="likes">按点赞排序</option><option value="comments">按留言排序</option>
+        <option value="shares">按分享排序</option><option value="date">最新发布</option><option value="random">随机排序</option>
+      </select>
+      <button id="btnLatest"   class="border rounded px-2 py-1">最新优先</button>
+      <button id="btnExport"   class="border rounded px-2 py-1">📤 导出</button><!-- ➊-3 新增导出按钮 -->
+      <button id="btnAddPage"  class="border rounded px-2 py-1">➕ 新增专页</button>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7FEPha3xCawC7hjOH7TwKUzpn1YLVX63eeMYSbzSTzbYShw/viewform?usp=header"
+         target="_blank" class="border rounded px-2 py-1">问题 & 修改建议</a>
+      <button id="btnShuffle" class="ml-auto text-xs bg-blue-600 text-white px-3 py-1 rounded hidden">随机刷新</button>
+    </section>
+  
+    <section id="gallery" class="flex-1 overflow-y-auto p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></section>
+  </main>
+  
+  <!-- 卡片模板 -->
+  <template id="cardTpl">
+    <article class="card bg-white dark:bg-gray-800 rounded shadow hover:shadow-lg transition flex flex-col relative">
+      <input type="checkbox" class="absolute right-1 top-1 w-4 h-4">
+      <img class="w-full object-cover">
+      <div class="px-3 pt-2 flex items-center text-xs gap-1">
+        <a class="plink text-blue-600 underline" target="_blank">打开链接 ↗</a>
+        <button class="copyBtn text-blue-500">📋</button>
+      </div>
+      <p class="snippet px-3 text-sm py-1"></p>
+      <span class="date px-3 text-xs"></span>
+      <div class="meta mt-auto px-3 py-2 text-xs flex justify-between items-center border-t">
+        <span class="stats"></span><span class="lang"></span>
+      </div>
+    </article>
+  </template>
+  
+  <!-- ➋-3 导出弹窗 -->
+  <div id="exportModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 w-[440px] p-4 rounded shadow">
+      <h3 class="text-lg mb-2">选择导出字段（拖拽排序）</h3>
+      <ul id="exportList" class="space-y-2 text-sm select-none cursor-grab"></ul>
+      <div class="mt-4 flex justify-end gap-2">
+        <button id="cancelExport" class="px-3 py-1 border rounded text-xs">取消</button>
+        <button id="confirmExport" class="px-3 py-1 bg-blue-600 text-white rounded text-xs">导出 CSV</button>
+      </div>
     </div>
-    <select id="selLang" class="border rounded px-2 py-1"><option value="ALL">显示全部语系</option></select>
-    <select id="selSort" class="border rounded px-2 py-1">
-      <option value="likes">按点赞排序</option>
-      <option value="comments">按留言排序</option>
-      <option value="shares">按分享排序</option>
-      <option value="random">随机排序</option>
-    </select>
-    <button id="btnShuffle" class="ml-auto text-xs bg-blue-600 text-white px-3 py-1 rounded hidden">随机刷新</button>
-  </section>
-
-  <section id="gallery" class="flex-1 overflow-y-auto p-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></section>
-</main>
-
-<!-- 卡片模板 -->
-<template id="cardTpl">
-  <article class="card bg-white dark:bg-gray-800 rounded shadow hover:shadow-lg transition flex flex-col">
-    <img class="w-full h-48 object-cover">
-    <a class="plink text-blue-600 underline text-xs px-3 pt-2" target="_blank">打开链接 ↗</a>
-    <p class="snippet px-3 text-sm py-1"></p>
-    <div class="meta mt-auto px-3 py-2 text-xs flex justify-between items-center border-t">
-      <span class="stats"></span><span class="lang"></span>
+  </div>
+  
+  <!-- 新增专页弹窗（同前，省略未改） -->
+  <div id="pageModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 w-[600px] p-4 rounded shadow max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="text-lg">批量新增专页</h3>
+        <div class="space-x-2">
+          <button id="submitPages" class="bg-blue-600 text-white px-3 py-1 rounded text-xs">提交</button>
+          <button id="closeModal" class="text-gray-400 hover:text-red-500 text-xl leading-none">&times;</button>
+        </div>
+      </div>
+      <table id="pageTable" class="w-full text-xs border dark:border-gray-600">
+        <thead class="bg-gray-100 dark:bg-gray-700"><tr><th>专页链接</th><th>语系</th><th>专页类型</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button id="addRow" class="mt-2 text-blue-600 text-xs">+ 新增行</button>
     </div>
-  </article>
-</template>
-
-<script>
-/* CONFIG */
-const SHEET_ID='1aBLL5Yig_F3Ev1DWBmoduY_d614nAEHbjk8Ngteots8';
-const API_KEY ='AIzaSyCO0edSQXijL9Jw0GIdxJu9FB2CGW8TSSk';
-const RANGE   ='Website!A:K';
-
-let raw=[],catFilter={l1:null,l2:null};
-const $=s=>document.querySelector(s);
-const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
-
-function toDirectLink(url){
-  if(!url.includes('drive.google.com')) return url;
-  try{
-    const u=new URL(url);
-    let id=u.searchParams.get('id')||'';
-    if(!id){
-      const parts=u.pathname.split('/');
-      const idx=parts.indexOf('d');
-      if(idx>-1&&parts[idx+1]) id=parts[idx+1];
-    }
-    return id?`https://lh3.googleusercontent.com/d/${id}=w1200`:url;
-  }catch{ return url;}
-}
-
-/* fetch */
-async function fetchSheet(){
-  const res=await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}&majorDimension=ROWS`);
-  const [h,...rows]=res.data.values;
-  return rows.map(r=>{
-    const obj=Object.fromEntries(h.map((k,i)=>[k,r[i]||'']));
-    const v=(obj.catL2||'').trim();
-    obj.catL2=v==='视频'?'视频':v==='纯文字贴'?'纯文字':(v?'图文':'');
-    return obj;
-  });
-}
-
-/* sidebar */
-function buildSidebar(items){
-  const map={};
-  items.forEach(i=>{(map[i.catL1]=map[i.catL1]||new Set()).add(i.catL2);});
-  document.querySelectorAll('#sidebar details').forEach(d=>{
-    const l1=d.querySelector('summary').dataset.l1;
-    const ul=d.querySelector('ul'); ul.innerHTML='';
-    (map[l1]||[]).forEach(l2=>{
-      const li=document.createElement('li');
-      li.textContent=l2; li.dataset.l1=l1; li.dataset.l2=l2;
-      li.className='cursor-pointer hover:text-blue-600';
-      ul.appendChild(li);
+  </div>
+  
+  <script>
+  /* CONFIG ------------------------------------------------------------------*/
+  const SHEET_ID='1aBLL5Yig_F3Ev1DWBmoduY_d614nAEHbjk8Ngteots89';
+  const API_KEY ='AIzaSyCO0edSQXijL9Jw0GIdxJu9FB2CGW8TSSk9';
+  const RANGE   ='Website!A:K';
+  const CLIENT_ID='YOUR_OAUTH_CLIENTID.apps.googleusercontent.com';
+  const SCOPES='https://www.googleapis.com/auth/spreadsheets';
+  
+  /* GLOBALS -----------------------------------------------------------------*/
+  const $=s=>document.querySelector(s);
+  let raw=[], catFilter={l1:null,l2:null}, selectedSet=new Set();
+  
+  /* ------- 1 Utils ---------------------------------------------------------*/
+  const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+  function toDirectLink(url){
+    if(!url.includes('drive.google.com')) return url;
+    try{const u=new URL(url);let id=u.searchParams.get('id')||'';if(!id){const p=u.pathname.split('/');const i=p.indexOf('d');if(i>-1&&p[i+1]) id=p[i+1];}
+        return id?`https://lh3.googleusercontent.com/d/${id}=w1200`:url}catch{return url}
+  }
+  
+  /* ------- 2 fetch sheet ---------------------------------------------------*/
+  async function fetchSheet(){
+    const {data}=await axios.get(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}&majorDimension=ROWS`);
+    const [h,...rows]=data.values;
+    return rows.map(r=>{
+      const o=Object.fromEntries(h.map((k,i)=>[k,r[i]||'']));
+      const v=(o.catL2||'').trim(); o.catL2=v==='视频'?'视频':v==='纯文字贴'?'纯文字':(v?'图文':''); return o;
     });
+  }
+  
+  /* ------- 3 build sidebar/lang -------------------------------------------*/
+  function buildSidebar(items){
+    const map={}; items.forEach(i=>(map[i.catL1]=map[i.catL1]||new Set()).add(i.catL2));
+    document.querySelectorAll('#sidebar details').forEach(d=>{
+      const l1=d.querySelector('summary').dataset.l1, ul=d.querySelector('ul'); ul.innerHTML='';
+      (map[l1]||[]).forEach(l2=>{const li=document.createElement('li');li.textContent=l2;li.dataset.l1=l1;li.dataset.l2=l2;li.className='cursor-pointer hover:text-blue-600';ul.appendChild(li)});
+    });
+  }
+  function buildLangOptions(items){[...new Set(items.map(i=>i.lang).filter(Boolean))].forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;$('#selLang').appendChild(o)})}
+  
+  /* ------- 4 render --------------------------------------------------------*/
+  function render(list){
+    const gal=$('#gallery'); gal.innerHTML='';
+    const tpl=$('#cardTpl');
+    list.forEach(it=>{
+      const n=tpl.content.cloneNode(true), img=n.querySelector('img');
+      const src=it.imageUrl?toDirectLink(it.imageUrl):null; if(!src) return;
+      img.dataset.src=src; img.loading='lazy';
+      n.querySelector('.plink').href=it.postLink;
+      const full=(it.content||'').toString();
+      n.querySelector('.snippet').textContent=full.length>100?full.slice(0,100)+'…':full;
+      n.querySelector('.snippet').title=full;
+      n.querySelector('.copyBtn').onclick=()=>navigator.clipboard.writeText(full);
+      n.querySelector('.stats').textContent=`👍${it.likes||0} 💬${it.comments||0} ↪️${it.shares||0}`;
+      n.querySelector('.lang').textContent=it.lang;
+      n.querySelector('.date').textContent=dayjs(it.date).format('YYYY-MM-DD');
+      const art=n.children[0], cb=art.querySelector('input[type=checkbox]');
+      art.dataset.id=it.id;          // 假设表中有 id 列
+      cb.checked=selectedSet.has(it.id);
+      cb.onchange=e=>{
+        cb.checked?selectedSet.add(it.id):selectedSet.delete(it.id);
+      };
+      gal.appendChild(n);
+    });
+    lazyLoadImages();
+  }
+  function lazyLoadImages(){
+    const imgs=[...$('#gallery').querySelectorAll('img[data-src]')];
+    const io=new IntersectionObserver((es,o)=>es.forEach(en=>{if(en.isIntersecting){en.target.src=en.target.dataset.src;en.target.removeAttribute('data-src');o.unobserve(en.target);}}),{rootMargin:'200px'}); imgs.forEach(i=>io.observe(i));
+  }
+  
+  /* ------- 5 filter --------------------------------------------------------*/
+  function applyFilters(){
+    let v=[...raw];
+    if(catFilter.l1){v=v.filter(i=>i.catL1===catFilter.l1);if(catFilter.l2) v=v.filter(i=>i.catL2===catFilter.l2);}
+    const f=$('#dateFrom').value,t=$('#dateTo').value;
+    if(f) v=v.filter(i=>dayjs(i.date).isAfter(dayjs(f).subtract(1,'day'))); if(t) v=v.filter(i=>dayjs(i.date).isBefore(dayjs(t).add(1,'day')));
+    if($('#selLang').value!=='ALL') v=v.filter(i=>i.lang===$('#selLang').value);
+    const k=$('#selSort').value;
+    if(k==='date') v.sort((a,b)=>dayjs(b.date)-dayjs(a.date));
+    else if(k==='random') v=shuffle(v);
+    else v.sort((a,b)=>(+b[k]||0)-(+a[k]||0));
+    $('#btnShuffle').classList.toggle('hidden',k!=='random');
+    render(v);
+  }
+  
+  /* ------- 6 events --------------------------------------------------------*/
+  $('#sidebar').addEventListener('click',e=>{
+    const li=e.target.closest('[data-l1]'); if(!li) return;
+    $('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));
+    li.classList.add('sidebar-active'); if(li.dataset.l2) li.closest('details').querySelector('summary').classList.add('sidebar-active');
+    catFilter={l1:li.dataset.l1,l2:li.dataset.l2||null}; applyFilters();
   });
-}
-
-/* langs */
-function buildLangOptions(items){
-  [...new Set(items.map(i=>i.lang).filter(Boolean))].forEach(l=>{
-    const o=document.createElement('option');o.value=l;o.textContent=l;$('#selLang').appendChild(o);
+  $('#resetCat').onclick=()=>{catFilter={l1:null,l2:null};$('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));applyFilters();};
+  ['#dateFrom','#dateTo'].forEach(id=>$(id).onchange=applyFilters);
+  $('#selLang').onchange=$('#selSort').onchange=applyFilters; $('#btnShuffle').onclick=applyFilters;
+  $('#btnLatest').onclick=()=>{$('#selSort').value='date';applyFilters();};
+  
+  /* ------- 7 导出弹窗 ➌ --------------------------------------------------*/
+  const fields=[ // key 映射表头
+    {key:'imageUrl', txt:'图片永久链接'}, {key:'postLink', txt:'帖文链接'},
+    {key:'catL1', txt:'专页类型'},      {key:'catL2', txt:'帖文类型'},
+    {key:'content',txt:'文案'},         {key:'lang',   txt:'语系'},
+    {key:'likes',  txt:'点赞'},         {key:'comments',txt:'留言'},
+    {key:'shares', txt:'分享'},         {key:'date',    txt:'发帖日期'}
+  ];
+  const exportList=$('#exportList');
+  function buildExportList(){
+    exportList.innerHTML='';
+    const cfg=JSON.parse(localStorage.getItem('exportCfg')||'null')||fields.map(f=>({key:f.key,checked:true}));
+    cfg.forEach(f=>{
+      const li=document.createElement('li');
+      li.className='flex items-center gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded';
+      li.innerHTML=`<input type="checkbox" ${f.checked?'checked':''}>
+                    <span class="flex-1">${fields.find(x=>x.key===f.key).txt}</span>
+                    <span class="cursor-move">☰</span>`;
+      li.dataset.key=f.key; exportList.appendChild(li);
+    });
+    Sortable.create(exportList,{handle:'span:last-child',animation:150});
+  }
+  $('#btnExport').onclick=()=>{buildExportList();$('#exportModal').classList.remove('hidden');};
+  $('#cancelExport').onclick=()=>$('#exportModal').classList.add('hidden');
+  $('#confirmExport').onclick=()=>{
+    const order=[...exportList.children].map(li=>({key:li.dataset.key,checked:li.querySelector('input').checked}));
+    localStorage.setItem('exportCfg',JSON.stringify(order)); // 存配置
+    const headers=order.filter(o=>o.checked).map(o=>fields.find(f=>f.key===o.key).txt);
+    const rows=[...selectedSet].map(id=>{
+      const item=raw.find(i=>i.id===id);
+      return order.filter(o=>o.checked).map(o=>item[o.key]||'');
+    });
+    if(!rows.length){alert('请先选中卡片');return;}
+    const csv=[headers,...rows].map(r=>r.map(s=>`"${String(s).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='export.csv';a.click();URL.revokeObjectURL(url);
+    $('#exportModal').classList.add('hidden');
+  };
+  
+  /* ------- 8 新增专页弹窗改动（自动加行 & 关闭）--------------------------*/
+  function addRow(){const tr=document.createElement('tr');tr.innerHTML=
+    `<td><input class="w-full border px-1"></td>
+     <td><input class="w-full border px-1"></td>
+     <td><select class="w-full border px-1"><option value=""></option><option>自家</option><option>宗派</option><option>外邦</option></select></td>`;
+    $('#pageTable tbody').appendChild(tr);
+  }
+  $('#btnAddPage').onclick=()=>{const tb=$('#pageTable tbody');tb.innerHTML='';for(let i=0;i<20;i++) addRow();$('#pageModal').classList.remove('hidden');};
+  $('#addRow').onclick=addRow;
+  $('#closeModal').onclick=()=>$('#pageModal').classList.add('hidden');
+  /* 无限滚动加行 */
+  const ob = new IntersectionObserver((es)=>{
+  es.forEach(en=>{
+    if(en.isIntersecting){
+      for(let i=0;i<20;i++) addRow();
+      ob.disconnect();
+      // 下一次循环再观察新的最后一行
+      setTimeout(()=>{
+        const last = $('#pageTable tbody').lastElementChild;
+        if(last) ob.observe(last);
+      },0);
+    }
   });
-}
-
-/* render */
-function render(list){
-  const gal=$('#gallery'); gal.innerHTML='';
-  const tpl=$('#cardTpl');
-  list.forEach(it=>{
-    const n=tpl.content.cloneNode(true);
-    const img=n.querySelector('img');
-    const src=it.imageUrl?toDirectLink(it.imageUrl):null;
-    if(!src) return;
-    img.dataset.src=src; img.loading='lazy';
-    n.querySelector('.plink').href=it.postLink;
-    const full=(it.content||'').toString();
-    const sn=n.querySelector('.snippet');sn.textContent=full.length>100?full.slice(0,100)+'…':full;sn.title=full;
-    n.querySelector('.stats').textContent=`👍${it.likes||0} 💬${it.comments||0} ↪️${it.shares||0}`;
-    n.querySelector('.lang').textContent=it.lang;
-    gal.appendChild(n);
-  });
-  lazyLoadImages();
-}
-
-function lazyLoadImages(){
-  const imgs=[...$('#gallery').querySelectorAll('img[data-src]')];
-  const io=new IntersectionObserver((es,o)=>es.forEach(en=>{
-    if(en.isIntersecting){en.target.src=en.target.dataset.src;en.target.removeAttribute('data-src');o.unobserve(en.target);}
-  }),{rootMargin:'200px'});
-  imgs.forEach(i=>io.observe(i));
-}
-
-/* filter */
-function applyFilters(){
-  let v=[...raw];
-  if(catFilter.l1){v=v.filter(i=>i.catL1===catFilter.l1);if(catFilter.l2)v=v.filter(i=>i.catL2===catFilter.l2);}
-  const f=$('#dateFrom').value,t=$('#dateTo').value;
-  if(f) v=v.filter(i=>dayjs(i.date).isAfter(dayjs(f).subtract(1,'day')));
-  if(t) v=v.filter(i=>dayjs(i.date).isBefore(dayjs(t).add(1,'day')));
-  if($('#selLang').value!=='ALL') v=v.filter(i=>i.lang===$('#selLang').value);
-  const k=$('#selSort').value; v=k==='random'?shuffle(v):v.sort((a,b)=>(+b[k]||0)-(+a[k]||0));
-  $('#btnShuffle').classList.toggle('hidden',k!=='random');
-  render(v);
-}
-
-/* events */
-$('#sidebar').addEventListener('click',e=>{
-  const li=e.target.closest('[data-l1]'); if(!li) return;
-  $('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));
-  li.classList.add('sidebar-active'); if(li.dataset.l2) li.closest('details').querySelector('summary').classList.add('sidebar-active');
-  catFilter={l1:li.dataset.l1,l2:li.dataset.l2||null}; applyFilters();
 });
-$('#resetCat').onclick=()=>{catFilter={l1:null,l2:null};$('#sidebar').querySelectorAll('.sidebar-active').forEach(el=>el.classList.remove('sidebar-active'));applyFilters();};
-['#dateFrom','#dateTo'].forEach(id=>$(id).onchange=applyFilters);
-$('#selLang').onchange=$('#selSort').onchange=applyFilters; $('#btnShuffle').onclick=applyFilters;
+setTimeout(()=>{
+  const last = $('#pageTable tbody').lastElementChild;
+  if(last) ob.observe(last);           // tbody 至少有一行时才 observe
+},0);
 
-/* theme */
-function setTheme(m){document.body.classList.toggle('dark',m==='dark');localStorage.setItem('theme',m);}
-$('#toggleTheme').onclick=()=>setTheme(document.body.classList.contains('dark')?'light':'dark');
-setTheme(localStorage.getItem('theme')==='dark'?'dark':'light');
-
-/* init */
-(async()=>{raw=await fetchSheet();buildSidebar(raw);buildLangOptions(raw);applyFilters();})();
-</script>
-</body>
-</html>
+  
+  /* OAuth 初始化 */
+  let gReady=new Promise(res=>{
+    function init(){gapi.load('client:auth2',async()=>{await gapi.client.init({apiKey:API_KEY,clientId:CLIENT_ID,scope:SCOPES});
+                                                     await gapi.auth2.getAuthInstance().signIn();res();});}
+    if(window.gapi)init();else window.addEventListener('gapiLoaded',init,{once:true});
+  });window.dispatchEvent(new Event('gapiLoaded'));
+  $('#submitPages').onclick=async()=>{
+    const rows=[...$('#pageTable tbody').rows].map(r=>[...r.cells].map(td=>td.firstElementChild.value.trim())).filter(a=>a.join('')!=='');
+    if(rows.some(a=>a.includes(''))){alert('请检查专页信息是否填写完善');return;}
+    if(!rows.length){alert('没有可提交数据');return;}
+    await gReady;
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:'新增专页!A1',valueInputOption:'USER_ENTERED',insertDataOption:'INSERT_ROWS',resource:{values:rows}});
+    alert('提交成功');$('#pageModal').classList.add('hidden');
+  };
+  
+  /* ------- 9 theme & init --------------------------------------------------*/
+  function setTheme(m){document.body.classList.toggle('dark',m==='dark');localStorage.setItem('theme',m);}
+  $('#toggleTheme').onclick=()=>setTheme(document.body.classList.contains('dark')?'light':'dark');
+  setTheme(localStorage.getItem('theme')==='dark'?'dark':'light');
+  
+  (async()=>{raw=await fetchSheet();buildSidebar(raw);buildLangOptions(raw);applyFilters();})();
+  </script>
+  </body></html>
+  
