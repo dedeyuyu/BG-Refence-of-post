@@ -10,13 +10,21 @@
   
   <style>
   :root{--sidebar-bg:#f0f4f9;--sidebar-tx:#000;--sidebar-hi:#1d4ed8;--bar-bg:#e8f0fe;--bar-tx:#000;--gallery-bg:#fafafa}
-  body.dark{--sidebar-bg:#1f2937;--sidebar-tx:#fff;--sidebar-hi:#60a5fa;--bar-bg:#374151;--bar-tx:#fff;--gallery-bg:#111827}
+  body.dark{--sidebar-bg:#1f2937;--sidebar-tx:#fff;--sidebar-hi:#60a5fa;--bar-bg:#374151;--bar-tx:#fff;--gallery-bg:#111827
+  --c-img: #0891b2;   /* 图文—青 */
+  --c-txt: #d97706;   /* 纯文字—橙 */
+  --c-vid: #db2777;   /* 视频—玫红 */
+  }
   ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
   body{background:var(--gallery-bg)} .snippet{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
   #sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--sidebar-bg);color:var(--sidebar-tx)}
   #sidebar .sidebar-active{font-weight:700;color:var(--sidebar-hi)}
   #controls{position:sticky;top:0;z-index:50;background:var(--bar-bg);color:var(--bar-tx)}
   #controls select,#controls input{background:inherit;color:inherit;border:1px solid #cbd5e1}
+  <section id="controls"
+  class="p-4 border-b flex flex-wrap gap-4 items-center text-sm
+         backdrop-blur bg-white/60 dark:bg-slate-800/60">
+
   .card img{aspect-ratio:3/5;object-fit:cover}
   .card .date{font-size:.9rem;font-weight:500}
   /* 多选勾选框显眼一点 */
@@ -36,6 +44,7 @@
     </ul>
   </aside>
   
+
   <main class="flex-1 flex flex-col">
     <!-- 顶栏 -->
     <section id="controls" class="p-4 border-b flex flex-wrap gap-4 items-center text-sm">
@@ -52,7 +61,7 @@
       <button id="btnExport"   class="border rounded px-2 py-1">📤 导出</button><!-- ➊-3 新增导出按钮 -->
       <!-- 把原来的 id="btnAddPage" 按钮替换为链接 -->
        <a id="btnAddPage"
-           href="https://docs.google.com/spreadsheets/d/1aPloiod1bn1qyy-0j1Vly5dEStmiFHdrqA4-QGjxaCA9/edit?gid=0"
+           href="https://docs.google.com/spreadsheets/d/1aPloiod1bn1qyy-0j1Vly5dEStmiFHdrqA4-QGjxaCA/edit?gid=0#gid=0"
         target="_blank"
       class="border rounded px-2 py-1">➕ 新增专页</a>
 
@@ -69,15 +78,25 @@
     <article class="card bg-white dark:bg-gray-800 rounded shadow hover:shadow-lg transition flex flex-col relative">
       <input type="checkbox" class="absolute right-1 top-1 w-4 h-4">
       <img class="w-full object-cover">
-      <div class="px-3 pt-2 flex items-center text-xs gap-1">
-        <a class="plink text-blue-600 underline" target="_blank">打开链接 ↗</a>
-        <button class="copyBtn text-blue-500">📋</button>
+      <!-- 卡片主体不变，只把底部信息区改成 ↓ -->
+      <div class="flex flex-col gap-1 px-3 pb-3">
+        <div class="flex items-center gap-1 text-xs">
+          <a class="plink text-blue-600 underline" target="_blank">打开链接 ↗</a>
+          <button class="copyBtn text-blue-600">📋 复制</button>
+        </div>
+
+      <p class="snippet text-sm"></p>
+
+      <div class="flex justify-between text-xs text-gray-500">
+        <span class="date font-medium"></span>
+        <span class="lang"></span>
       </div>
-      <p class="snippet px-3 text-sm py-1"></p>
-      <span class="date px-3 text-xs"></span>
-      <div class="meta mt-auto px-3 py-2 text-xs flex justify-between items-center border-t">
-        <span class="stats"></span><span class="lang"></span>
-      </div>
+
+      <div class="flex gap-4 text-sm font-medium">
+    <span class="stats"></span>
+  </div>
+</div>
+
     </article>
   </template>
   
@@ -97,26 +116,6 @@
       </div>
     </div>
   </div>
-  
-  <!-- 新增专页弹窗（同前，省略未改） -->
-  <div id="pageModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
-    <div class="bg-white dark:bg-gray-800 w-[600px] p-4 rounded shadow max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-2">
-        <h3 class="text-lg">批量新增专页</h3>
-        <div class="space-x-2">
-          <button id="submitPages" class="bg-blue-600 text-white px-3 py-1 rounded text-xs">提交</button>
-          <button id="closeModal" class="text-gray-400 hover:text-red-500 text-xl leading-none">&times;</button>
-        </div>
-      </div>
-      <table id="pageTable" class="w-full text-xs border dark:border-gray-600">
-        <thead class="bg-gray-100 dark:bg-gray-700"><tr><th>专页链接</th><th>语系</th><th>专页类型</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button id="addRow" class="mt-2 text-blue-600 text-xs">+ 新增行</button>
-    </div>
-  </div>
-  
-
   
   <script>
   /* CONFIG ------------------------------------------------------------------*/
@@ -140,6 +139,14 @@
   
   /* ------- 1 Utils ---------------------------------------------------------*/
   const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+  
+  function kFormat(n){
+  n = Number(n||0);
+  if (n < 1e4) return n;                  // 9999 以内保持原样
+  const unit = n >= 1e8 ? '亿' : '万';     // 过亿显示“亿”
+  const base = n >= 1e8 ? 1e8 : 1e4;
+  return (n / base).toFixed(1).replace(/\.0$/,'') + unit;
+  }
   function toDirectLink(url){
     if(!url.includes('drive.google.com')) return url;
     try{const u=new URL(url);let id=u.searchParams.get('id')||'';if(!id){const p=u.pathname.split('/');const i=p.indexOf('d');if(i>-1&&p[i+1]) id=p[i+1];}
@@ -182,15 +189,24 @@
   navigator.clipboard.writeText(full).then(()=>toast('复制文案成功'));
 };
 
-      n.querySelector('.stats').textContent=`👍${it.likes||0} 💬${it.comments||0} ↪️${it.shares||0}`;
+      n.querySelector('.stats').textContent =
+      `👍${kFormat(it.likes)}  💬${kFormat(it.comments)}  ↪️${kFormat(it.shares)}`;
+
       n.querySelector('.lang').textContent=it.lang;
       n.querySelector('.date').textContent=dayjs(it.date).format('YYYY-MM-DD');
       const art=n.children[0], cb=art.querySelector('input[type=checkbox]');
       art.dataset.id=it.id;          // 假设表中有 id 列
       cb.checked=selectedSet.has(it.id);
-      cb.onchange=e=>{
-        cb.checked?selectedSet.add(it.id):selectedSet.delete(it.id);
+      cb.onchange = () => {
+        if (cb.checked) {
+          selectedSet.add(it.id);
+          art.classList.add('ring-2','ring-red-500');   // 红色描边
+        } else {
+          selectedSet.delete(it.id);
+          art.classList.remove('ring-2','ring-red-500');
+        }
       };
+
       img.onclick=()=>{
         cb.checked=!cb.checked;
       cb.dispatchEvent(new Event('change'));
@@ -281,51 +297,6 @@
   $('#exportModal').classList.add('hidden');
 };
 
-  
-  /* ------- 8 新增专页弹窗改动（自动加行 & 关闭）--------------------------*/
-  function addRow(){const tr=document.createElement('tr');tr.innerHTML=
-    `<td><input class="w-full border px-1"></td>
-     <td><input class="w-full border px-1"></td>
-     <td><select class="w-full border px-1"><option value=""></option><option>自家</option><option>宗派</option><option>外邦</option></select></td>`;
-    $('#pageTable tbody').appendChild(tr);
-  }
-  $('#btnAddPage').onclick=()=>{const tb=$('#pageTable tbody');tb.innerHTML='';for(let i=0;i<20;i++) addRow();$('#pageModal').classList.remove('hidden');};
-  $('#addRow').onclick=addRow;
-  $('#closeModal').onclick=()=>$('#pageModal').classList.add('hidden');
-  /* 无限滚动加行 */
-  const ob = new IntersectionObserver((es)=>{
-  es.forEach(en=>{
-    if(en.isIntersecting){
-      for(let i=0;i<20;i++) addRow();
-      ob.disconnect();
-      // 下一次循环再观察新的最后一行
-      setTimeout(()=>{
-        const last = $('#pageTable tbody').lastElementChild;
-        if(last) ob.observe(last);
-      },0);
-    }
-  });
-});
-setTimeout(()=>{
-  const last = $('#pageTable tbody').lastElementChild;
-  if(last) ob.observe(last);           // tbody 至少有一行时才 observe
-},0);
-
-  
-  /* OAuth 初始化 */
-  let gReady=new Promise(res=>{
-    function init(){gapi.load('client:auth2',async()=>{await gapi.client.init({apiKey:API_KEY,clientId:CLIENT_ID,scope:SCOPES});
-                                                     await gapi.auth2.getAuthInstance().signIn();res();});}
-    if(window.gapi)init();else window.addEventListener('gapiLoaded',init,{once:true});
-  });window.dispatchEvent(new Event('gapiLoaded'));
-  $('#submitPages').onclick=async()=>{
-    const rows=[...$('#pageTable tbody').rows].map(r=>[...r.cells].map(td=>td.firstElementChild.value.trim())).filter(a=>a.join('')!=='');
-    if(rows.some(a=>a.includes(''))){alert('请检查专页信息是否填写完善');return;}
-    if(!rows.length){alert('没有可提交数据');return;}
-    await gReady;
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:'新增专页!A1',valueInputOption:'USER_ENTERED',insertDataOption:'INSERT_ROWS',resource:{values:rows}});
-    alert('提交成功');$('#pageModal').classList.add('hidden');
-  };
   
   /* ------- 9 theme & init --------------------------------------------------*/
   function setTheme(m){document.body.classList.toggle('dark',m==='dark');localStorage.setItem('theme',m);}
