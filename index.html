@@ -1,1 +1,26 @@
-
+<!DOCTYPE html><meta charset="utf-8">
+<title>🔒 加密页面</title>
+<style>
+html,body{height:100%;display:grid;place-items:center;font-family:sans-serif;background:#111;color:#eee}
+input{padding:.6rem 1rem;border-radius:6px;border:1px solid #555;background:#222;color:#eee;width:200px}
+button{margin-left:.5rem;padding:.6rem 1rem;border:0;border-radius:6px;background:#4ade80;color:#111;cursor:pointer}
+</style>
+<h2>请输入密码解锁</h2>
+<div><input id=p type=password autofocus><button onclick=go()>解锁</button></div>
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<script>
+async function go(){
+  const pw=document.getElementById('p').value.trim(); if(!pw) return;
+  const res=await fetch('secret.lock');              // 加密文件名
+  const data=CryptoJS.enc.Base64.parse(await res.text());
+  const iv  =CryptoJS.lib.WordArray.create(data.words.slice(0,4));     // 前 16B
+  const ctt =CryptoJS.lib.WordArray.create(data.words.slice(4));       // 剩余
+  const key =CryptoJS.SHA256(pw);
+  try{
+    const decrypted=CryptoJS.AES.decrypt({ciphertext:ctt},key,{iv,mode:CryptoJS.mode.CBC});
+    const html=decrypted.toString(CryptoJS.enc.Utf8);
+    if(!html.startsWith('<!DOCTYPE')) throw 0;
+    document.open();document.write(html);document.close();
+  }catch{ alert('密码错误'); }
+}
+</script>
